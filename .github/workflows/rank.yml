@@ -1,0 +1,31 @@
+name: Rank ACC Classes
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  rank:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate rankings
+        run: python src/rank_classes.py --input "data/Grad Program Exit Survey Data 2024 (1).xlsx" --output outputs
+
+      - name: Upload ranking artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: rank_outputs
+          path: |
+            outputs/rank_order.csv
+            outputs/rank_order.png
