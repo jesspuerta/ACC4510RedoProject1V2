@@ -72,8 +72,8 @@ def build_ranking(input_path: Path) -> pd.DataFrame:
     summary = pd.DataFrame(
         {
             "class": data.columns,
-            "n": data.count().values,
             "mean": data.mean().values,
+            "n": data.count().values,
             "median": data.median().values,
             "std": data.std().values,
         }
@@ -149,7 +149,7 @@ def print_console_summary(summary: pd.DataFrame) -> None:
         print(f"  #{int(row['rank'])}: {row['class']} | mean={row['mean']:.3f}, n={int(row['n'])}")
 
     print("\nBottom classes:")
-    for _, row in summary.tail(top_n).iterrows():
+    for _, row in summary.tail(top_n).sort_values("mean", ascending=True).iterrows():
         print(f"  #{int(row['rank'])}: {row['class']} | mean={row['mean']:.3f}, n={int(row['n'])}")
 
 
