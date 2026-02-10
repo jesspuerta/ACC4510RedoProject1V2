@@ -102,7 +102,7 @@ def save_outputs(summary: pd.DataFrame, output_dir: Path) -> None:
 
     summary.to_csv(csv_path, index=False)
 
-    plot_df = summary.copy()
+    plot_df = summary.sort_values("mean", ascending=False).copy()
     plot_df["label"] = plot_df.apply(lambda r: f"{r['class']} (n={int(r['n'])})", axis=1)
 
     fig_height = max(6, len(plot_df) * 0.65)
@@ -110,6 +110,9 @@ def save_outputs(summary: pd.DataFrame, output_dir: Path) -> None:
 
     bars = ax.barh(plot_df["label"], plot_df["mean"], color="#2E86AB")
     ax.invert_yaxis()
+
+    if plot_df.iloc[0]["rank"] != 1:
+        raise ValueError("Plot ordering check failed: first plotted label is not rank 1.")
 
     ax.set_xlabel("Mean Rating (1-8)")
     ax.set_ylabel("Class")
@@ -127,7 +130,7 @@ def save_outputs(summary: pd.DataFrame, output_dir: Path) -> None:
             fontsize=10,
         )
 
-    fig.suptitle("2024 Exit Survey: Class Benefit Ranking (Columns L–S)", fontsize=16, y=0.98)
+    fig.suptitle("2024 Exit Survey: Class Benefit Ranking", fontsize=16, y=0.98)
     ax.set_title(
         "Mean rating on 1–8 scale (higher = more beneficial); values from rows 3+",
         fontsize=11,
