@@ -11,6 +11,18 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 DEFAULT_INPUT = "data/Grad Program Exit Survey Data 2024 (1).xlsx"
+UVU_GREEN = "#275D38"
+CHART_EXPLANATION = (
+    "This graph shows how students ranked each class based on perceived benefit. "
+    "Each bar represents one class, and the average score (mean) reflects its overall rank "
+    "across survey responses. In this dataset, higher mean values indicate a worse ranking "
+    "(i.e., students rated the class as less beneficial), while lower mean values indicate a "
+    "better ranking (more beneficial). The classes are ordered from the worst-ranked at the "
+    "bottom to the best-ranked at the top, so you can quickly identify which courses students "
+    "viewed as least versus most beneficial. Use the bar lengths to compare classes: longer "
+    "bars correspond to lower perceived benefit, and shorter bars correspond to higher "
+    "perceived benefit."
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -108,7 +120,7 @@ def save_outputs(summary: pd.DataFrame, output_dir: Path) -> None:
     fig_height = max(6, len(plot_df) * 0.65)
     fig, ax = plt.subplots(figsize=(14, fig_height))
 
-    bars = ax.barh(plot_df["label"], plot_df["mean"], color="#2E86AB")
+    bars = ax.barh(plot_df["label"], plot_df["mean"], color=UVU_GREEN)
 
     min_mean_label = plot_df.iloc[0]["label"]
 
@@ -145,7 +157,17 @@ def save_outputs(summary: pd.DataFrame, output_dir: Path) -> None:
 
     ax.set_title("2024 Exit Survey: Class Benefit Ranking", fontsize=16, pad=14)
 
-    plt.tight_layout()
+    fig.text(
+        0.01,
+        0.01,
+        CHART_EXPLANATION,
+        ha="left",
+        va="bottom",
+        fontsize=9,
+        wrap=True,
+    )
+
+    plt.tight_layout(rect=(0, 0.22, 1, 1))
     fig.savefig(png_path, dpi=200)
     plt.close(fig)
 
