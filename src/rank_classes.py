@@ -102,17 +102,30 @@ def save_outputs(summary: pd.DataFrame, output_dir: Path) -> None:
 
     summary.to_csv(csv_path, index=False)
 
-    plot_df = summary.sort_values("mean", ascending=False).copy()
+    plot_df = summary.sort_values("mean", ascending=True).copy()
     plot_df["label"] = plot_df.apply(lambda r: f"{r['class']} (n={int(r['n'])})", axis=1)
 
     fig_height = max(6, len(plot_df) * 0.65)
     fig, ax = plt.subplots(figsize=(14, fig_height))
 
     bars = ax.barh(plot_df["label"], plot_df["mean"], color="#2E86AB")
-    ax.invert_yaxis()
 
-    if plot_df.iloc[0]["rank"] != 1:
-        raise ValueError("Plot ordering check failed: first plotted label is not rank 1.")
+    min_mean_label = plot_df.iloc[0]["label"]
+
+    def get_top_tick_label() -> str | None:
+        tick_labels = [tick.get_text() for tick in ax.get_yticklabels()]
+        if not tick_labels:
+            return None
+        y0, y1 = ax.get_ylim()
+        return tick_labels[-1] if y0 < y1 else tick_labels[0]
+
+    top_tick_label = get_top_tick_label()
+    if top_tick_label != min_mean_label:
+        ax.invert_yaxis()
+        top_tick_label = get_top_tick_label()
+
+    if top_tick_label != min_mean_label:
+        raise ValueError("Plot orientation check failed: lowest mean is not at the top.")
 
     ax.set_xlabel("Mean Rating (1-8)")
     ax.set_ylabel("Class")
@@ -130,12 +143,7 @@ def save_outputs(summary: pd.DataFrame, output_dir: Path) -> None:
             fontsize=10,
         )
 
-    fig.suptitle("2024 Exit Survey: Class Benefit Ranking", fontsize=16, y=0.98)
-    ax.set_title(
-        "Mean rating on 1–8 scale (higher = more beneficial); values from rows 3+",
-        fontsize=11,
-        pad=12,
-    )
+    ax.set_title("2024 Exit Survey: Class Benefit Ranking", fontsize=16, pad=14)
 
     plt.tight_layout()
     fig.savefig(png_path, dpi=200)
